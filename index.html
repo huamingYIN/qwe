@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>随机选择题</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+    background: #f5f7fa;
+}
+
+/* 容器 */
+.box {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* 题目 */
+h2 {
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+/* 选项按钮 */
+button.option {
+    width: 100%;
+    margin: 8px 0;
+    padding: 14px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    background: #e3e8ff;
+    transition: all 0.2s;
+}
+
+/* 点击反馈 */
+button.option:active {
+    transform: scale(0.97);
+    background: #cfd7ff;
+}
+
+/* 结果 */
+.result {
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* 换题按钮 */
+.next {
+    margin-top: 15px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #4c6fff;
+    color: #fff;
+    font-size: 16px;
+}
+
+.next:active {
+    transform: scale(0.97);
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2 id="question"></h2>
+    <div id="options"></div>
+    <div class="result" id="result"></div>
+    <button class="next" onclick="loadQuestion()">换一题</button>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "中国的首都是哪里？",
+        options: ["A. 上海", "B. 北京", "C. 广州", "D. 深圳"],
+        answer: 1
+    },
+    {
+        q: "2 + 2 等于多少？",
+        options: ["A. 3", "B. 4", "C. 5", "D. 6"],
+        answer: 1
+    },
+    {
+        q: "地球是第几颗行星？",
+        options: ["A. 第一", "B. 第二", "C. 第三", "D. 第四"],
+        answer: 2
+    },
+    {
+        q: "HTML 是什么？",
+        options: ["A. 编程语言", "B. 标记语言", "C. 数据库", "D. 操作系统"],
+        answer: 1
+    },
+    {
+        q: "水的化学式是？",
+        options: ["A. CO2", "B. H2O", "C. O2", "D. NaCl"],
+        answer: 1
+    }
+];
+
+let current;
+
+function loadQuestion() {
+    document.getElementById("result").innerText = "";
+    current = questions[Math.floor(Math.random() * questions.length)];
+    document.getElementById("question").innerText = current.q;
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    current.options.forEach((opt, index) => {
+        const btn = document.createElement("button");
+        btn.innerText = opt;
+        btn.className = "option";
+        btn.onclick = () => checkAnswer(index);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function checkAnswer(index) {
+    const result = document.getElementById("result");
+    if (index === current.answer) {
+        result.innerText = "✅ 正确！";
+        result.style.color = "green";
+    } else {
+        result.innerText = "❌ 错误！";
+        result.style.color = "red";
+    }
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
