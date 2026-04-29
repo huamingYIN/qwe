@@ -1,145 +1,198 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>随机选择题</title>
+<title>图片转800x800工具</title>
 
 <style>
 body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-    background: #f5f7fa;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f2f3f5;
 }
 
-/* 容器 */
-.box {
-    max-width: 500px;
-    margin: 20px auto;
-    padding: 20px;
+/* 顶部 */
+.toolbar {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+/* 主体 */
+.container {
+    padding: 16px;
+}
+
+/* 卡片 */
+.card {
     background: #fff;
     border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-/* 题目 */
-h2 {
-    font-size: 18px;
-    line-height: 1.5;
-}
-
-/* 选项按钮 */
-button.option {
-    width: 100%;
-    margin: 8px 0;
-    padding: 14px;
-    font-size: 16px;
-    border: none;
-    border-radius: 10px;
-    background: #e3e8ff;
-    transition: all 0.2s;
-}
-
-/* 点击反馈 */
-button.option:active {
-    transform: scale(0.97);
-    background: #cfd7ff;
-}
-
-/* 结果 */
-.result {
-    margin-top: 12px;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-/* 换题按钮 */
-.next {
-    margin-top: 15px;
+/* 按钮 */
+button {
     width: 100%;
     padding: 14px;
+    margin-top: 10px;
     border: none;
-    border-radius: 10px;
-    background: #4c6fff;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* 不同按钮颜色 */
+.btn-main {
+    background: #007aff;
     color: #fff;
-    font-size: 16px;
 }
 
-.next:active {
+.btn-paste {
+    background: #34c759;
+    color: #fff;
+}
+
+button:active {
     transform: scale(0.97);
+}
+
+/* 上传区域 */
+.upload-box {
+    text-align: center;
+    font-size: 15px;
+    color: #666;
+}
+
+/* canvas */
+canvas {
+    width: 100%;
+    max-width: 340px;
+    display: block;
+    margin: 0 auto 12px;
+    border-radius: 12px;
+    background: #fff;
 }
 </style>
 </head>
 
 <body>
 
-<div class="box">
-    <h2 id="question"></h2>
-    <div id="options"></div>
-    <div class="result" id="result"></div>
-    <button class="next" onclick="loadQuestion()">换一题</button>
+<div class="toolbar">📷 转800×800</div>
+
+<div class="container">
+
+    <div class="card upload-box">
+        <p>选择图片 或 ctrl+v粘贴</p>
+        <input type="file" id="upload"><br>
+
+        <button class="btn-paste" onclick="pasteImage()">📋 粘贴图片</button>
+    </div>
+
+    <div id="preview"></div>
+
 </div>
 
 <script>
-const questions = [
-    {
-        q: "中国的首都是哪里？",
-        options: ["A. 上海", "B. 北京", "C. 广州", "D. 深圳"],
-        answer: 1
-    },
-    {
-        q: "2 + 2 等于多少？",
-        options: ["A. 3", "B. 4", "C. 5", "D. 6"],
-        answer: 1
-    },
-    {
-        q: "地球是第几颗行星？",
-        options: ["A. 第一", "B. 第二", "C. 第三", "D. 第四"],
-        answer: 2
-    },
-    {
-        q: "HTML 是什么？",
-        options: ["A. 编程语言", "B. 标记语言", "C. 数据库", "D. 操作系统"],
-        answer: 1
-    },
-    {
-        q: "水的化学式是？",
-        options: ["A. CO2", "B. H2O", "C. O2", "D. NaCl"],
-        answer: 1
-    }
-];
+let preview = document.getElementById('preview');
+let currentCanvas = null;
 
-let current;
+// 生成canvas
+function createCanvas(img) {
+    let canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 800;
+    let ctx = canvas.getContext('2d');
 
-function loadQuestion() {
-    document.getElementById("result").innerText = "";
-    current = questions[Math.floor(Math.random() * questions.length)];
-    document.getElementById("question").innerText = current.q;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 800, 800);
 
-    const optionsDiv = document.getElementById("options");
-    optionsDiv.innerHTML = "";
+    let scale = 800 / Math.max(img.width, img.height);
+    let w = img.width * scale;
+    let h = img.height * scale;
 
-    current.options.forEach((opt, index) => {
-        const btn = document.createElement("button");
-        btn.innerText = opt;
-        btn.className = "option";
-        btn.onclick = () => checkAnswer(index);
-        optionsDiv.appendChild(btn);
-    });
+    let x = (800 - w) / 2;
+    let y = (800 - h) / 2;
+
+    ctx.drawImage(img, x, y, w, h);
+
+    return canvas;
 }
 
-function checkAnswer(index) {
-    const result = document.getElementById("result");
-    if (index === current.answer) {
-        result.innerText = "✅ 正确！";
-        result.style.color = "green";
-    } else {
-        result.innerText = "❌ 错误！";
-        result.style.color = "red";
+// 显示图片
+function showImage(file) {
+    let img = new Image();
+
+    img.onload = function() {
+        let canvas = createCanvas(img);
+        currentCanvas = canvas;
+
+        preview.innerHTML = '';
+
+        let card = document.createElement('div');
+        card.className = 'card';
+
+        let btn = document.createElement('button');
+        btn.className = 'btn-main';
+        btn.innerText = '⬇ 下载图片';
+        btn.onclick = function() {
+            let link = document.createElement('a');
+            link.download = 'output.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        };
+
+        card.appendChild(canvas);
+        card.appendChild(btn);
+        preview.appendChild(card);
+    };
+
+    img.src = URL.createObjectURL(file);
+}
+
+// 上传
+document.getElementById('upload').addEventListener('change', function(e) {
+    let file = e.target.files[0];
+    if (file) showImage(file);
+});
+
+// 粘贴按钮（关键新增）
+async function pasteImage() {
+    try {
+        const items = await navigator.clipboard.read();
+
+        for (const item of items) {
+            for (const type of item.types) {
+                if (type.startsWith("image/")) {
+                    const blob = await item.getType(type);
+                    showImage(blob);
+                    return;
+                }
+            }
+        }
+
+        alert("剪贴板里没有图片");
+    } catch (err) {
+        alert("当前浏览器不支持粘贴图片，请用上传");
     }
 }
 
-loadQuestion();
+// 传统粘贴（PC）
+document.addEventListener('paste', function(e) {
+    let items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+            let file = items[i].getAsFile();
+            showImage(file);
+        }
+    }
+});
 </script>
 
 </body>
